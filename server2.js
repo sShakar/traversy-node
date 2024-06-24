@@ -1,8 +1,5 @@
 import { createServer } from "http";
-
-const PORT = process.env.PORT;
-
-const userIdRegex = /\/api\/users\/([0-9]+)/;
+const PORT = 8000;
 
 const users = [
   { id: 1, name: "John Doe" },
@@ -10,23 +7,24 @@ const users = [
   { id: 3, name: "Jim Doe" },
 ];
 
+const userIdRegex = /\/api\/users\/([0-9]+)/;
+
 // Logger middleware
 const logger = (req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
 };
 
-// JSON Middleware
-
+// JSON middleware
 const jsonMiddleware = (req, res, next) => {
   res.setHeader("Content-Type", "application/json");
   next();
-  res.end();
 };
 
-// Route handles for GET /api/users
+// Route handler for GET /api/users
 const getUsersHandler = (req, res) => {
   res.write(JSON.stringify(users));
+  res.end();
 };
 
 // Route handler for GET /api/users/:id
@@ -38,14 +36,32 @@ const getUserByIdHandler = (req, res) => {
     res.write(JSON.stringify(user));
   } else {
     res.statusCode = 404;
-    res.write(JSON.stringify({ message: "User not found." }));
+    res.write(JSON.stringify({ message: "User not found" }));
   }
+  res.end();
+};
+
+// Route handler for POST /api/users
+const createUserHandler = (req, res) => {
+  let body = "";
+  // Listen for data
+  req.on("data", (chunk) => {
+    body += chunk.toString();
+  });
+  req.on("end", () => {
+    const newUser = JSON.parse(body);
+    users.push(newUser);
+    res.statusCode = 201;
+    res.write(JSON.stringify(newUser));
+    res.end();
+  });
 };
 
 // Not found handler
 const notFoundHandler = (req, res) => {
   res.statusCode = 404;
-  res.write(JSON.stringify({ message: "Route not found." }));
+  res.write(JSON.stringify({ message: "Route not found" }));
+  res.end();
 };
 
 const server = createServer((req, res) => {
