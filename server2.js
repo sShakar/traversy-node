@@ -2,6 +2,8 @@ import { createServer } from "http";
 
 const PORT = process.env.PORT;
 
+const userIdRegex = /\/api\/users\/([0-9]+)/;
+
 const users = [
   { id: 1, name: "John Doe" },
   { id: 2, name: "Jane Doe" },
@@ -19,12 +21,12 @@ const logger = (req, res, next) => {
 const jsonMiddleware = (req, res, next) => {
   res.setHeader("Content-Type", "application/json");
   next();
+  res.end();
 };
 
 // Route handles for GET /api/users
 const getUsersHandler = (req, res) => {
   res.write(JSON.stringify(users));
-  res.end();
 };
 
 // Route handler for GET /api/users/:id
@@ -44,15 +46,20 @@ const getUserByIdHandler = (req, res) => {
 const notFoundHandler = (req, res) => {
   res.statusCode = 404;
   res.write(JSON.stringify({ message: "Route not found." }));
-  res.end();
 };
 
 const server = createServer((req, res) => {
   logger(req, res, () => {
     jsonMiddleware(req, res, () => {
       if (req.url === "/api/users" && req.method === "GET") {
-        getUsersHandler();
-      }else if (req.url.){}
+        getUsersHandler(req, res);
+      } else if (req.url.match(userIdRegex) && req.method === "GET") {
+        getUserByIdHandler(req, res);
+      } else if (req.url === "/api/users" && req.method === "POST") {
+        createUserHandler(req, res);
+      } else {
+        notFoundHandler(req, res);
+      }
     });
   });
 });
