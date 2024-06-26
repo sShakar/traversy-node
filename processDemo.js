@@ -20,11 +20,11 @@ console.log(process.memoryUsage());
 // update()
 console.log(process.uptime());
 
-process.on('exit', (code) => {
+process.on("exit", (code) => {
   console.log(`About to exit with code: ${code}`);
 });
 
 // exit()
 process.exit(0);
 
-console.log('Hello from after exit');
+console.log("Hello from after exit");
